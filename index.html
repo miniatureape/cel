@@ -8,6 +8,15 @@
 <body>
 
     <canvas id="cel"></canvas>
+    <div id="controls">
+        <button data-action-add-frame>Add Frame</button>
+        <button data-action-play>Play</button>
+        <div id="frame-info"></div>
+    </div>
+
+    <script type="text/html" id="frame-info-tpl">
+        <p><%= current_frame %> / <%= num_frames %></p>
+    </script>
 
     <script src="js/jquery.js"></script>
     <script src="js/underscore.js"></script>
