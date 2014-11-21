@@ -102,6 +102,60 @@
         this.ctx.stroke();
     }
 
+    var Player = function(cel, animation, options) {
+        this.cel = cel;
+        this.animation = animation;
+        this.options = _.extend({
+            loop: true,
+            fps: 24,
+        }, options);
+
+        this.playing = false;
+        this.playHead = 0;
+        this.lastTime = 0;
+    }
+
+    Player.prototype.loop = function(time) {
+        debugger;
+        if (!this.playing) return;
+        requestAnimationFrame(_.bind(this.loop, this));
+
+        if (!this.shouldDisplayNow(time)) return;
+        this.lastTime = time;
+
+        this.loopOrPause();
+        this.showFrame(this.playHead++);
+    }
+
+    Player.prototype.showFrame = function(frameNum) {
+        this.cel.clear();
+        this.cel.renderFrame(animation.getFrame(frameNum));
+    }
+
+    Player.prototype.shouldDisplayNow = function(time) {
+        var timeElapsed = time - this.lastTime;
+        return timeElapsed > ((1000/this.options.fps));
+    }
+
+    Player.prototype.loopOrPause = function() {
+        if (this.playHead >= this.animation.frames.length) {
+            if (this.options.loop) {
+                this.playHead = 0;
+            } else {
+                this.pause();
+            }
+        }
+    }
+
+    Player.prototype.play = function() {
+        this.playing = true;
+        requestAnimationFrame(_.bind(this.loop, this));
+    }
+
+    Player.prototype.pause = function() {
+        this.playing = false;
+    }
+
     var Controls = function(el, animation, cel) {
         this.el = $(el);
         this.animation = animation;
@@ -126,19 +180,8 @@
     }
 
     Controls.prototype.onClickPlay = function() {
-        this.animation.index = 0;
-        var interval = setInterval(_.bind(function() {
-            this.animation.index++;
-            var frame = this.animation.getFrame();
-            if (!frame) {
-                clearInterval(interval);
-            } else {
-                this.cel.renderFrame(frame, {
-                    globalAlpha: .5,
-                    strokeStyle: '#ff0000'
-                });
-            }
-        }, this), 100);
+        var player = new Player(this.cel, this.animation);
+        player.play();
     }
 
     Controls.prototype.renderFrameInfo = function() {
