@@ -59,6 +59,10 @@
         _.last(this.strokes).addCoord(coord);
     }
 
+    Frame.prototype.addStroke = function(stroke) {
+        this.strokes.push(stroke);
+    }
+
     var Animation = function() {
         this.frames = [new Frame()];
     }
@@ -101,7 +105,7 @@
     }
 
     Cel.prototype.addStroke = function() {
-        this.drawingFrame.strokes.push(new Stroke);
+        this.drawingFrame.addStroke(new Stroke);
     }
 
     Cel.prototype.clear = function() {
