@@ -29,16 +29,17 @@
     var Cel = function(el) {
         this.el = $(el);
         this.ctx = this.el.get(0).getContext('2d');
-        this.currentFrame = null;
+        this.drawingFrame = null;
 
         this.boundMDown = _.bind(this.onMouseDown, this);
         this.boundMMove = _.bind(this.onMouseMove, this);
         this.boundMUp = _.bind(this.onMouseUp, this);
+
         this.initializeEvents();
     }
 
     Cel.prototype.setCurrentFrame = function(frame) {
-        this.currentFrame = frame;
+        this.drawingFrame = frame;
     }
 
     Cel.prototype.initializeEvents = function() {
@@ -67,12 +68,12 @@
     }
 
     Cel.prototype.pushCoord = function(coord) {
-        _.last(this.currentFrame.strokes).coords.push(coord);
+        _.last(this.drawingFrame.strokes).coords.push(coord);
         return coord;
     }
 
     Cel.prototype.addStroke = function() {
-        this.currentFrame.strokes.push(new Stroke);
+        this.drawingFrame.strokes.push(new Stroke);
     }
 
     Cel.prototype.clear = function() {
