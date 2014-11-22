@@ -34,45 +34,61 @@
         return this.frames[index || this.index];
     }
 
-    var Cel = function(el) {
-        this.el = dtk.findElem(el);
-        this.ctx = this.el.getContext('2d');
-        this.drawingFrame = null;
+    var PenDelegate = function(el, onPenDown, onPenDraw) {
+        this.el = el;
+
+        this.onPenDown = onPenDown;
+        this.onPenDraw = onPenDraw;
 
         this.boundMDown = _.bind(this.onMouseDown, this);
         this.boundMMove = _.bind(this.onMouseMove, this);
         this.boundMUp = _.bind(this.onMouseUp, this);
 
-        this.initializeEvents();
+        this.initializeStartEvent();
     }
 
-    Cel.prototype.setCurrentFrame = function(frame) {
-        this.drawingFrame = frame;
-    }
-
-    Cel.prototype.initializeEvents = function() {
+    PenDelegate.prototype.initializeStartEvent = function() {
         this.el.addEventListener('mousedown', this.boundMDown);
     }
 
-    Cel.prototype.onMouseDown = function(e) {
-        this.addStroke();
+    PenDelegate.prototype.onMouseDown = function(e) {
         var coord = Coord.fromMouseEvent(e);
-        this.ctx.beginPath();
-        this.ctx.moveTo(coord.x, coord.y);
+        this.onPenDown(coord);
         this.el.addEventListener('mousemove', this.boundMMove)
         this.el.addEventListener('mouseup', this.boundMUp)
     }
 
-    Cel.prototype.onMouseMove = function(e) {
+    PenDelegate.prototype.onMouseMove = function(e) {
         var coord = Coord.fromMouseEvent(e);
+        this.onPenDraw(coord);
+    }
+
+    PenDelegate.prototype.onMouseUp = function() {
+        this.el.removeEventListener('mousemove', this.boundMMove);
+        this.el.removeEventListener('mouseup', this.boundMUp);
+    }
+
+    var Cel = function(el) {
+        this.el = dtk.findElem(el);
+        this.ctx = this.el.getContext('2d');
+        this.drawingFrame = null;
+        this.penDelegate = new PenDelegate(this.el, _.bind(this.onPenDown, this), _.bind(this.onPenDraw, this));
+    }
+
+    Cel.prototype.onPenDown = function(coord) {
+        this.addStroke();
+        this.ctx.beginPath();
+        this.ctx.moveTo(coord.x, coord.y);
+    }
+
+    Cel.prototype.onPenDraw = function(coord) {
         this.addCoord(coord);
         this.ctx.lineTo(coord.x, coord.y);
         this.ctx.stroke();
     }
 
-    Cel.prototype.onMouseUp = function() {
-        this.el.removeEventListener('mousemove', this.boundMMove);
-        this.el.removeEventListener('mouseup', this.boundMUp);
+    Cel.prototype.setCurrentFrame = function(frame) {
+        this.drawingFrame = frame;
     }
 
     Cel.prototype.addCoord = function(coord) {
