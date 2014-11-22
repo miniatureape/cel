@@ -1,5 +1,14 @@
 (function() {
 
+    var loadTemplate = function (id) {
+        var rawTpl = dtk.findElem('#frame-info-tpl').innerHTML;
+        return _.template(rawTpl);
+    }
+
+    var renderInto = function(selector, tpl, data) {
+        dtk.findElem(selector).innerHTML = tpl(data);
+    }
+
     var PenDelegate = function(el, onPenDown, onPenDraw) {
         this.el = el;
 
@@ -135,7 +144,7 @@
         this.ctx.stroke();
     }
 
-    var Player = function(cel, animation, options) {
+    var Player = function(animation, cel, options) {
         this.cel = cel;
         this.animation = animation;
         this.options = _.extend({
@@ -188,11 +197,17 @@
         this.playing = false;
     }
 
-    var Controls = function(el, animation, cel) {
+    var Controls = function(el, animation, cel, player) {
         this.el = dtk.findElem(el);
         this.animation = animation;
         this.cel = cel;
+        this.player = player;
         this.initializeEvents();
+
+        this.templates = {
+            controls: loadTemplate('controls-controls'),
+            frameinfo: loadtemplate('controls-frameinfo')
+        };
     }
 
     Controls.prototype.initializeEvents = function() {
@@ -213,28 +228,34 @@
     }
 
     Controls.prototype.onClickPlay = function() {
-        var player = new Player(this.cel, this.animation);
-        player.play();
+        this.player.play();
+    }
+
+    Controls.prototype.renderControls = function() {
+        var data = { is_playing: this.player.playing };
+        renderInto('[data-region="controls"]', this.templates.controls, data);
     }
 
     Controls.prototype.renderFrameInfo = function() {
-        var rawTpl = dtk.findElem('#frame-info-tpl').innerHTML;
-        var tpl = _.template(rawTpl);
-        dtk.findElem('#frame-info').innerHTML = tpl({
-            num_frames: animation.frames.length,
-        });
+        var data = { num_frames: animation.frames.length };
+        renderInto('[data-region="frameinfo"]', this.templates.frameinfo, data);
     }
 
     var main = function () {
+
         window.animation = new Animation();
         window.cel = new Cel('#cel');
+        window.player = new Player(animation, cel);
+
         cel.setCurrentFrame(animation.getFrame());
 
         window.controls = new Controls(
             '#controls',
             animation,
-            cel
+            cel,
+            player
         );
+
         window.controls.renderFrameInfo();
     }
 
