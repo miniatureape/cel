@@ -13,8 +13,16 @@
         this.coords = [];
     }
 
+    Stroke.prototype.addCoord = function(coord) {
+        this.coords.push(coord);
+    }
+
     var Frame = function() {
         this.strokes = [];
+    }
+
+    Frame.prototype.addCoord = function(coord) {
+        _.last(this.strokes).addCoord(coord);
     }
 
     var Animation = function() {
@@ -57,7 +65,7 @@
 
     Cel.prototype.onMouseMove = function(e) {
         var coord = Coord.fromMouseEvent(e);
-        this.pushCoord(coord);
+        this.addCoord(coord);
         this.ctx.lineTo(coord.x, coord.y);
         this.ctx.stroke();
     }
@@ -67,8 +75,8 @@
         this.el.removeEventListener('mouseup', this.boundMUp);
     }
 
-    Cel.prototype.pushCoord = function(coord) {
-        _.last(this.drawingFrame.strokes).coords.push(coord);
+    Cel.prototype.addCoord = function(coord) {
+        this.drawingFrame.addCoord(coord);
         return coord;
     }
 
