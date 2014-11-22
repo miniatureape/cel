@@ -27,8 +27,8 @@
     }
 
     var Cel = function(el) {
-        this.el = $(el);
-        this.ctx = this.el.get(0).getContext('2d');
+        this.el = dtk.findElem(el);
+        this.ctx = this.el.getContext('2d');
         this.drawingFrame = null;
 
         this.boundMDown = _.bind(this.onMouseDown, this);
@@ -43,7 +43,7 @@
     }
 
     Cel.prototype.initializeEvents = function() {
-        this.el.on('mousedown', this.boundMDown);
+        this.el.addEventListener('mousedown', this.boundMDown);
     }
 
     Cel.prototype.onMouseDown = function(e) {
@@ -51,8 +51,8 @@
         var coord = Coord.fromMouseEvent(e);
         this.ctx.beginPath();
         this.ctx.moveTo(coord.x, coord.y);
-        this.el.on('mousemove', this.boundMMove)
-        this.el.on('mouseup', this.boundMUp)
+        this.el.addEventListener('mousemove', this.boundMMove)
+        this.el.addEventListener('mouseup', this.boundMUp)
     }
 
     Cel.prototype.onMouseMove = function(e) {
@@ -63,8 +63,8 @@
     }
 
     Cel.prototype.onMouseUp = function() {
-        this.el.off('mousemove', this.boundMMove);
-        this.el.off('mouseup', this.boundMUp);
+        this.el.removeEventListener('mousemove', this.boundMMove);
+        this.el.removeEventListener('mouseup', this.boundMUp);
     }
 
     Cel.prototype.pushCoord = function(coord) {
@@ -77,7 +77,7 @@
     }
 
     Cel.prototype.clear = function() {
-        this.ctx.clearRect(0, 0, this.el.width(), this.el.height());
+        this.ctx.clearRect(0, 0, this.el.width, this.el.height);
     }
 
     Cel.prototype.renderFrame = function(frame, style) {
@@ -117,7 +117,6 @@
     }
 
     Player.prototype.loop = function(time) {
-        debugger;
         if (!this.playing) return;
         requestAnimationFrame(_.bind(this.loop, this));
 
@@ -158,15 +157,18 @@
     }
 
     var Controls = function(el, animation, cel) {
-        this.el = $(el);
+        this.el = dtk.findElem(el);
         this.animation = animation;
         this.cel = cel;
         this.initializeEvents();
     }
 
     Controls.prototype.initializeEvents = function() {
-        this.el.find('[data-action-add-frame]').on('click', _.bind(this.onClickAddFrame, this));
-        this.el.find('[data-action-play]').on('click', _.bind(this.onClickPlay, this));
+        var addFrameBtn = dtk.findElem('[data-action-add-frame]', this.el);
+        dtk.on(addFrameBtn, 'click', this.onClickAddFrame, this);
+
+        var playBtn = dtk.findElem('[data-action-play]', this.el);
+        dtk.on(playBtn, 'click', this.onClickPlay, this);
     }
 
     Controls.prototype.onClickAddFrame = function() {
@@ -186,12 +188,12 @@
     }
 
     Controls.prototype.renderFrameInfo = function() {
-        var tpl = _.template($('#frame-info-tpl').html());
-        $('#frame-info').html(tpl({
+        var rawTpl = dtk.findElem('#frame-info-tpl').innerHTML;
+        var tpl = _.template(rawTpl);
+        dtk.findElem('#frame-info').innerHTML = tpl({
             current_frame: animation.index + 1,
             num_frames: animation.frames.length,
-        }));
-
+        });
     }
 
     var main = function () {
