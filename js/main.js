@@ -1,39 +1,5 @@
 (function() {
 
-    var Coord = function(x, y) {
-        this.x = x;
-        this.y = y;
-    }
-
-    Coord.fromMouseEvent = function(e) {
-        return new Coord(e.offsetX, e.offsetY);
-    }
-
-    var Stroke = function() {
-        this.coords = [];
-    }
-
-    Stroke.prototype.addCoord = function(coord) {
-        this.coords.push(coord);
-    }
-
-    var Frame = function() {
-        this.strokes = [];
-    }
-
-    Frame.prototype.addCoord = function(coord) {
-        _.last(this.strokes).addCoord(coord);
-    }
-
-    var Animation = function() {
-        this.frames = [new Frame()];
-        this.index = 0;
-    }
-
-    Animation.prototype.getFrame = function(index) {
-        return this.frames[index || this.index];
-    }
-
     var PenDelegate = function(el, onPenDown, onPenDraw) {
         this.el = el;
 
@@ -66,6 +32,44 @@
     PenDelegate.prototype.onMouseUp = function() {
         this.el.removeEventListener('mousemove', this.boundMMove);
         this.el.removeEventListener('mouseup', this.boundMUp);
+    }
+
+    var Coord = function(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    Coord.fromMouseEvent = function(e) {
+        return new Coord(e.offsetX, e.offsetY);
+    }
+
+    var Stroke = function() {
+        this.coords = [];
+    }
+
+    Stroke.prototype.addCoord = function(coord) {
+        this.coords.push(coord);
+    }
+
+    var Frame = function() {
+        this.strokes = [];
+    }
+
+    Frame.prototype.addCoord = function(coord) {
+        _.last(this.strokes).addCoord(coord);
+    }
+
+    var Animation = function() {
+        this.frames = [new Frame()];
+    }
+
+    Animation.prototype.getFrame = function(index) {
+        return (index === undefined) ? _.last(this.frames) : this.frames[index];
+    }
+
+    Animation.prototype.addFrame = function(frame) {
+        this.frames.push(frame);
+        return frame;
     }
 
     var Cel = function(el) {
@@ -200,9 +204,7 @@
             globalAlpha: .5,
             strokeStyle: '#ff0000'
         });
-        this.animation.frames.push(new Frame);
-        this.animation.index = this.animation.frames.length - 1;
-        this.cel.setCurrentFrame(this.animation.getFrame());
+        this.cel.setCurrentFrame(this.animation.addFrame(new Frame));
         this.renderFrameInfo();
     }
 
@@ -215,7 +217,6 @@
         var rawTpl = dtk.findElem('#frame-info-tpl').innerHTML;
         var tpl = _.template(rawTpl);
         dtk.findElem('#frame-info').innerHTML = tpl({
-            current_frame: animation.index + 1,
             num_frames: animation.frames.length,
         });
     }
