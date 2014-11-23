@@ -117,7 +117,7 @@
     }
 
     Cel.prototype.clear = function() {
-        this.ctx.clearRect(0, 0, this.el.width, this.el.height);
+        this.ctx.clearRect(0, 0, this.el.width(), this.el.height());
     }
 
     Cel.prototype.renderFrame = function(frame, style) {
@@ -210,11 +210,8 @@
     }
 
     Controls.prototype.initializeEvents = function() {
-        var addFrameBtn = this.el.find('[data-action-add-frame]');
-        addFrameBtn.on('click', _.bind(this.onClickAddFrame, this));
-
-        var playBtn = this.el.find('[data-action-play]');
-        playBtn.on('click', _.bind(this.onClickPlay, this));
+        this.el.on('click', '[data-action-add-frame]', _.bind(this.onClickAddFrame, this));
+        this.el.on('click', '[data-action-play]', _.bind(this.onClickPlay, this));
     }
 
     Controls.prototype.onClickAddFrame = function() {
@@ -223,7 +220,7 @@
             strokeStyle: '#ff0000'
         });
         this.cel.setCurrentFrame(this.animation.addFrame(new Frame));
-        this.renderFrameInfo();
+        this.render();
     }
 
     Controls.prototype.onClickPlay = function() {
