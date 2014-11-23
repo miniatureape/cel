@@ -1,16 +1,15 @@
 (function() {
 
     var loadTemplate = function (id) {
-        var rawTpl = dtk.findElem('#frame-info-tpl').innerHTML;
-        return _.template(rawTpl);
+        return _.template($(id).html());
     }
 
     var renderInto = function(selector, tpl, data) {
-        dtk.findElem(selector).innerHTML = tpl(data);
+        $(selector).innerHTML = tpl(data);
     }
 
     var PenDelegate = function(el, onPenDown, onPenDraw) {
-        this.el = el;
+        this.el = $(el);
 
         this.onPenDown = onPenDown;
         this.onPenDraw = onPenDraw;
@@ -23,14 +22,14 @@
     }
 
     PenDelegate.prototype.initializeStartEvent = function() {
-        this.el.addEventListener('mousedown', this.boundMDown);
+        this.el.on('mousedown', this.boundMDown);
     }
 
     PenDelegate.prototype.onMouseDown = function(e) {
         var coord = Coord.fromMouseEvent(e);
         this.onPenDown(coord);
-        this.el.addEventListener('mousemove', this.boundMMove)
-        this.el.addEventListener('mouseup', this.boundMUp)
+        this.el.on('mousemove', this.boundMMove)
+        this.el.on('mouseup', this.boundMUp)
     }
 
     PenDelegate.prototype.onMouseMove = function(e) {
@@ -39,8 +38,8 @@
     }
 
     PenDelegate.prototype.onMouseUp = function() {
-        this.el.removeEventListener('mousemove', this.boundMMove);
-        this.el.removeEventListener('mouseup', this.boundMUp);
+        this.el.off('mousemove', this.boundMMove);
+        this.el.off('mouseup', this.boundMUp);
     }
 
     var Coord = function(x, y) {
@@ -86,8 +85,8 @@
     }
 
     var Cel = function(el) {
-        this.el = dtk.findElem(el);
-        this.ctx = this.el.getContext('2d');
+        this.el = $(el);
+        this.ctx = this.el[0].getContext('2d');
         this.drawingFrame = null;
         this.penDelegate = new PenDelegate(this.el, _.bind(this.onPenDown, this), _.bind(this.onPenDraw, this));
     }
@@ -198,24 +197,24 @@
     }
 
     var Controls = function(el, animation, cel, player) {
-        this.el = dtk.findElem(el);
+        this.el = $(el);
         this.animation = animation;
         this.cel = cel;
         this.player = player;
         this.initializeEvents();
 
         this.templates = {
-            controls: loadTemplate('controls-controls'),
-            frameinfo: loadtemplate('controls-frameinfo')
+            controls: loadTemplate('#controls-controls'),
+            frameinfo: loadTemplate('#controls-frameinfo')
         };
     }
 
     Controls.prototype.initializeEvents = function() {
-        var addFrameBtn = dtk.findElem('[data-action-add-frame]', this.el);
-        dtk.on(addFrameBtn, 'click', this.onClickAddFrame, this);
+        var addFrameBtn = this.el.find('[data-action-add-frame]');
+        addFrameBtn.on('click', _.bind(this.onClickAddFrame, this));
 
-        var playBtn = dtk.findElem('[data-action-play]', this.el);
-        dtk.on(playBtn, 'click', this.onClickPlay, this);
+        var playBtn = this.el.find('[data-action-play]');
+        playBtn.on('click', _.bind(this.onClickPlay, this));
     }
 
     Controls.prototype.onClickAddFrame = function() {
@@ -231,14 +230,19 @@
         this.player.play();
     }
 
+    Controls.prototype.render = function() {
+        this.renderControls();
+        this.renderFrameInfo();
+    }
+
     Controls.prototype.renderControls = function() {
         var data = { is_playing: this.player.playing };
-        renderInto('[data-region="controls"]', this.templates.controls, data);
+        $('[data-region="controls"]').html(this.templates.controls(data));
     }
 
     Controls.prototype.renderFrameInfo = function() {
         var data = { num_frames: animation.frames.length };
-        renderInto('[data-region="frameinfo"]', this.templates.frameinfo, data);
+        $('[data-region="frameinfo"]').html(this.templates.frameinfo(data));
     }
 
     var main = function () {
@@ -256,7 +260,7 @@
             player
         );
 
-        window.controls.renderFrameInfo();
+        window.controls.render();
     }
 
     main();
