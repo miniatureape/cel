@@ -196,11 +196,22 @@
         this.playing = false;
     }
 
+    Player.prototype.toggle = function() {
+        this.playing = !this.playing;
+        if (this.playing) {
+            requestAnimationFrame(_.bind(this.loop, this));
+        }
+    }
+
     var Controls = function(el, animation, cel, player) {
+
         this.el = $(el);
         this.animation = animation;
         this.cel = cel;
         this.player = player;
+
+        Object.observe(this.player, _.bind(this.onPlayerChanged, this));
+
         this.initializeEvents();
 
         this.templates = {
@@ -214,6 +225,14 @@
         this.el.on('click', '[data-action-play]', _.bind(this.onClickPlay, this));
     }
 
+    Controls.prototype.onPlayerChanged = function(changes) {
+        _.each(changes, function(change) {
+            if (change.name === 'playing') {
+                this.renderControls();
+            }
+        }, this);
+    }
+
     Controls.prototype.onClickAddFrame = function() {
         this.cel.renderFrame(this.animation.getFrame(), {
             globalAlpha: .5,
@@ -224,7 +243,7 @@
     }
 
     Controls.prototype.onClickPlay = function() {
-        this.player.play();
+        this.player.toggle();
     }
 
     Controls.prototype.render = function() {

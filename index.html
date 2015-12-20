@@ -15,8 +15,18 @@
     </div>
 
     <script type="text/template" id="controls-controls">
-        <button data-action-add-frame>Add Frame</button>
-        <button data-action-play>Play</button>
+        <button data-action-add-frame
+            <% if (is_playing) { %>
+                disabled
+            <% } %>
+            >Add Frame</button>
+        <button data-action-play>
+            <% if (is_playing) { %>
+                Pause
+            <% } else { %>
+                Play
+            <% }%>
+        </button>
         <div id="frame-info"></div>
     </script>
 
